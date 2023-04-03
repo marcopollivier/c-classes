@@ -38,6 +38,7 @@ int main(int argc, char const *argv[]) {
         perror("Socket failed");
         exit(EXIT_FAILURE);
     }
+    puts("Socket criado com sucesso!");
 
     // Define as propriedades do Socket
     address.sin_family = AF_INET;
