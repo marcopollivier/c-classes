@@ -8,8 +8,7 @@ build: clean
 	gcc -o bin/client2 socket-client.c
 
 run-server:
-	./bin/server
+	./bin/server 8888
 
-run-clients:
-	./bin/client1
-	./bin/client2
+run-client:
+	./bin/client1 127.0.0.1 8888
