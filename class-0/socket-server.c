@@ -90,7 +90,34 @@ int main(int argc, char const *argv[]) {
         }
 
         // Verifica se há mensagens de algum dos clientes
-        
+        for (int i = 0; i < num_clients; i++) {
+
+            if(FD_ISSET(clients[i].socket, &readfds)) {
+                valread = read(clients[i].socket, buffer, 1024);
+                if(valread <= 0) {
+                    // O cliente desconectou
+                    close(clients[i].socket);
+                    memmove(clients + i, clients + i + 1, (num_clients - i - 1) * sizeof(struct client));
+                    num_clients--;
+                    continue;
+                }
+
+                if (clients[i].name[0] == '\0') {
+                    // O cliente acabou de se conectar e ainda não escolheu um nome
+                    buffer[valread-1] = '\0'; // Remove o caractere de quebra de linha
+                    strcpy(clients[i].name, buffer);
+                    char name_message[100];
+                    sprintf(name_message, "%s entrou no chat\n", clients[i].name);
+                    send_message(name_message, clients[i].socket, clients, num_clients);
+                } else {
+                    // O cliente enviou uma mensagem
+                    buffer[valread] = '\0'; // Adiciona o caractere nulo ao final da string
+                    char message[1024];
+                    sprintf(message, "%s: %s", clients[i].name, buffer);
+                    send_message(message, clients[i].socket, clients, num_clients);
+                }
+            }
+        }
     }
     
     return EXIT_SUCCESS;
