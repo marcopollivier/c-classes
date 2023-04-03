@@ -60,9 +60,39 @@ int main(int argc, char const *argv[]) {
         FD_ZERO(&readfds);
         FD_SET(server_socket, &readfds);
 
+        for (int i = 0; i < num_clients; i++) {
+            FD_SET(clients[i].socket, &readfds);
+        }
 
+        // Espera até que haja atividade em algum dos sockets
+        activity = select(0, &readfds, NULL, NULL, NULL);
+
+        if (activity < 0) {
+            perror("Select");
+            exit(EXIT_FAILURE);
+        }
+
+        // Se houver atividade no socket do servidor
+        // Existe uma nova conexão para ser aceita
+        if(FD_ISSET(server_socket, &readfds)) {
+            if ((new_socket = accept(server_socket, (struct sockaddr *)&address, (socklen_t*)&addrlen))<0) {
+                perror("accept");
+                exit(EXIT_FAILURE);
+            }
+
+            // Adiciona o novo cliente a lista
+            struct client new_client = { new_socket, "" };
+            clients[num_clients++] = new_client;
+
+            // Envia uma mensagem de boas-vindas para o novo cliente
+            char welcome_message[100] = "Bem-vindo ao chat!\nDigite o seu nome:";
+            send(new_socket, welcome_message, strlen(welcome_message), 0);
+        }
+
+        // Verifica se há mensagens de algum dos clientes
+        
     }
     
-
+    return EXIT_SUCCESS;
 }
 
